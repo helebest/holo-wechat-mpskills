@@ -1,6 +1,7 @@
-# OpenRouter Provider Notes
+# OpenRouter Image Provider Notes
 
-The illustrator scripts use OpenRouter chat completions for both visual planning and image generation.
+The OpenRouter script path generates one image per command through
+`/api/v1/chat/completions`.
 
 Required environment variable:
 
@@ -8,12 +9,19 @@ Required environment variable:
 OPENROUTER_API_KEY
 ```
 
-Optional environment variables:
+Optional environment variable:
 
 ```text
-TEXT_MODEL=google/gemini-3-pro-preview
-IMAGE_MODEL=google/gemini-3-pro-image-preview
-MAX_DOC_LEN=5000
+OPENROUTER_IMAGE_MODEL=google/gemini-3-pro-image-preview
 ```
 
-If image generation fails, keep the generated visual plan and report which scene failed instead of inventing image paths.
+`--openrouter-api-key` and `--model` override the environment for a single run.
+The scripts do not load `.env` files.
+
+Text-to-image requests send the prompt as the user message content. Image-to-image
+requests send a content array with one text block followed by one `image_url`
+block per reference image. Local references are encoded as base64 data URLs;
+remote references remain URLs.
+
+If image generation fails, report the OpenRouter error and do not invent image
+paths.

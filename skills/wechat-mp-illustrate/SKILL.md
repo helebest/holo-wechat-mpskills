@@ -1,13 +1,16 @@
 ---
 name: wechat-mp-illustrate
-description: Generate coherent illustrations for Markdown articles and insert them into the document. Use when a WeChat MP / 微信公众号 article needs AI-generated cover or body illustrations, visual scene planning, consistent characters, or image prompts.
+description: Generate text-to-image or image-to-image assets for WeChat Official Account articles. Use when a WeChat MP / 微信公众号 article needs a cover image, body illustration, reference-image variation, or final image prompt turned into a local asset.
 ---
 
 # WeChat MP Illustrate
 
-Use this skill before typesetting when a Markdown article needs generated illustrations.
+Use this skill before typesetting when an article needs generated image assets. The
+agent using the skill is responsible for writing the final image prompt from the
+article context; this skill only turns that prompt, plus optional reference images,
+into image files.
 
-## Setup
+## OpenRouter Setup
 
 Install dependencies when needed:
 
@@ -15,32 +18,59 @@ Install dependencies when needed:
 python -m pip install -r <skill-dir>/scripts/requirements.txt
 ```
 
-Configure OpenRouter access:
+Configure OpenRouter in the process environment:
 
 ```text
 OPENROUTER_API_KEY=your_api_key
-TEXT_MODEL=google/gemini-3-pro-preview
-IMAGE_MODEL=google/gemini-3-pro-image-preview
-MAX_DOC_LEN=5000
+OPENROUTER_IMAGE_MODEL=google/gemini-3-pro-image-preview
 ```
 
-## Workflow
+`OPENROUTER_IMAGE_MODEL` is optional. A `--model` argument overrides it for a
+single command. The scripts do not load `.env` files; load one in your shell first
+if you keep credentials locally.
 
-Run the illustrator:
+## OpenRouter Workflow
+
+Generate from a prompt:
 
 ```bash
-python <skill-dir>/scripts/illustrate.py article.md --output output --style "clean editorial illustration"
+python <skill-dir>/scripts/illustrate.py \
+  --prompt-file cover.prompt.txt \
+  --output images/cover.png \
+  --aspect-ratio 16:9
 ```
 
-The script:
+Generate from a prompt plus one or more reference images:
 
-1. Adds paragraph anchors such as `<!-- [P1] -->`.
-2. Asks the text model for a JSON visual plan with characters, style, aspect ratio, and scene insertion anchors.
-3. Generates images for planned scenes.
-4. Writes an illustrated Markdown file and an `images/` directory.
+```bash
+python <skill-dir>/scripts/illustrate.py \
+  --prompt "Create a clean WeChat article cover in the same visual direction." \
+  --reference-image references/style.png \
+  --output images/cover.png \
+  --model google/gemini-3-pro-image-preview
+```
+
+Reference images can be local paths or remote URLs. Local paths are encoded as
+base64 data URLs before the OpenRouter request.
+
+## Codex Workflow
+
+When this skill is used inside Codex and the built-in image generation capability
+is available, the agent may use Codex's `gpt-image-2` image model instead of
+OpenRouter. In that path:
+
+1. Write the final prompt from the article context and any user constraints.
+2. Use the built-in Codex image generation tool with `gpt-image-2`.
+3. Save the generated asset under the article's image directory.
+4. Insert or update the Markdown image reference before passing the article to
+   `wechat-mp-typeset`.
+
+This Codex path does not require `OPENROUTER_API_KEY` and is not implemented as a
+Python runtime provider.
 
 ## Notes
 
-- The prompt contract is stored in `scripts/prompts.py`.
+- Keep prompts concrete: medium, subject, composition, palette, lighting, camera,
+  text/no-text requirement, and aspect ratio.
+- Do not print `OPENROUTER_API_KEY` or include it in generated files.
 - Generated Markdown should be passed to `wechat-mp-typeset`.
-- Keep custom style instructions concrete: medium, palette, lighting, camera, and aspect ratio preference.
