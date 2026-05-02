@@ -1,0 +1,30 @@
+[project]
+name = "holo-wechat-mpskills"
+version = "0.1.0"
+description = "WeChat Official Account Agent Skills and distribution tooling"
+requires-python = ">=3.10"
+dependencies = [
+    "pytest>=8.0.0",
+    "pyyaml>=6.0.0",
+    "markdown>=3.4.0",
+    "requests>=2.28.0",
+    "python-dotenv>=1.0.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.0.0",
+]
+
+[project.scripts]
+holo-wechat-build = "holo_wechat_wpskills.build:main"
+holo-wechat-validate = "holo_wechat_wpskills.validate:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/holo_wechat_wpskills"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"

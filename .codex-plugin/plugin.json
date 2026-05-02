@@ -1,0 +1,25 @@
+{
+  "name": "wechat-mp",
+  "version": "0.1.0",
+  "description": "WeChat Official Account skills for article typesetting, illustration, draft management, and publishing workflows.",
+  "author": {
+    "name": "holo"
+  },
+  "license": "MIT",
+  "keywords": ["wechat", "wechat-mp", "official-account", "skills"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "WeChat MP",
+    "shortDescription": "Prepare and manage WeChat Official Account articles.",
+    "longDescription": "Skills for Markdown-to-WeChat HTML typesetting, AI article illustrations, WeChat Official Account draft/material management, and safe publishing workflows.",
+    "developerName": "holo",
+    "category": "Productivity",
+    "capabilities": ["Write", "Automation"],
+    "defaultPrompt": [
+      "Typeset this Markdown article for WeChat.",
+      "Create a WeChat draft from this HTML.",
+      "Prepare this article for WeChat publishing."
+    ],
+    "brandColor": "#07C160"
+  }
+}

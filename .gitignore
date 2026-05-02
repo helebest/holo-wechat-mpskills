@@ -1,0 +1,10 @@
+.venv/
+.uv-cache/
+.pytest_cache/
+.tmp/
+__pycache__/
+*.pyc
+dist/
+.coverage
+.env
+.wechat_token_cache.json

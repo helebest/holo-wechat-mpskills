@@ -1,0 +1,24 @@
+# holo-wechat-mpskills
+
+Canonical Agent Skills for WeChat Official Account article production.
+
+The source of truth is the `skills/` directory:
+
+- `wechat-mp-typeset`
+- `wechat-mp-manage`
+- `wechat-mp-illustrate`
+- `wechat-mp-publish`
+
+The repository uses `uv` for development and testing only. Deployable skills do not include `pyproject.toml`; Python dependencies are declared in each skill's `scripts/requirements.txt`.
+
+Build release artifacts:
+
+```bash
+uv run holo-wechat-build
+```
+
+Validate the repository:
+
+```bash
+uv run holo-wechat-validate
+```
