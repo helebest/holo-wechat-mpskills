@@ -10,7 +10,6 @@ import json
 import requests
 from typing import Optional, Dict, Any
 from pathlib import Path
-from dotenv import load_dotenv, find_dotenv
 
 
 class WeChatAPIError(Exception):
@@ -33,29 +32,24 @@ class WeChatClient:
         appid: Optional[str] = None,
         appsecret: Optional[str] = None,
         token_cache_dir: Optional[str] = None,
-        env_file: Optional[str] = None,
         session: Optional[Any] = None,
     ):
         """
         初始化客户端
 
         Args:
-            appid: 公众号 AppID，默认从环境变量 WECHAT_APPID 读取
-            appsecret: 公众号 AppSecret，默认从环境变量 WECHAT_APPSECRET 读取
+            appid: 公众号 AppID，默认从环境变量 WECHAT_MP_APPID 读取
+            appsecret: 公众号 AppSecret，默认从环境变量 WECHAT_MP_APPSECRET 读取
             token_cache_dir: token 缓存目录，默认当前目录
-            env_file: .env 文件路径，默认自动查找
             session: 可选 HTTP 会话对象，需提供 get/post/request 方法；测试中可注入 fake
         """
-        # 自动加载 .env 文件（从当前目录向上查找）
-        load_dotenv(env_file or find_dotenv(usecwd=True))
-
-        self.appid = appid or os.environ.get("WECHAT_APPID")
-        self.appsecret = appsecret or os.environ.get("WECHAT_APPSECRET")
+        self.appid = appid or os.environ.get("WECHAT_MP_APPID")
+        self.appsecret = appsecret or os.environ.get("WECHAT_MP_APPSECRET")
 
         if not self.appid or not self.appsecret:
             raise ValueError(
-                "请设置 WECHAT_APPID 和 WECHAT_APPSECRET 环境变量，"
-                "或创建 .env 文件，或在初始化时传入 appid 和 appsecret 参数"
+                "请设置 WECHAT_MP_APPID 和 WECHAT_MP_APPSECRET 环境变量，"
+                "或在初始化时传入 appid 和 appsecret 参数"
             )
 
         self.token_cache_dir = Path(token_cache_dir or ".")

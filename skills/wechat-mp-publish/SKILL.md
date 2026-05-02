@@ -19,6 +19,6 @@ Use this skill to coordinate the other WeChat MP skills without duplicating thei
 ## Constraints
 
 - Do not publish, delete, or overwrite WeChat content without explicit confirmation.
-- Do not expose `WECHAT_APPSECRET`, `OPENROUTER_API_KEY`, access tokens, or token cache contents.
+- Do not expose `WECHAT_MP_APPSECRET`, `OPENROUTER_API_KEY`, access tokens, or token cache contents.
 - Prefer draft creation and preview checks over direct publishing.
 - Read `references/workflow.md` for the detailed sequence and handoff artifacts.
