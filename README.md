@@ -134,7 +134,7 @@ sending the WeChat API request.
 
 The latest packaged release is available at:
 
-https://github.com/helebest/holo-wechat-mpskills/releases/tag/v0.1.0
+https://github.com/helebest/holo-wechat-mpskills/releases/tag/v0.2.0
 
 Release artifacts include:
 
@@ -183,7 +183,7 @@ skill's `scripts/requirements.txt`.
 2. Update `CHANGELOG.md`.
 3. Run the local quality baseline.
 4. Build release artifacts with `uv run holo-wechat-build`.
-5. Create and push a version tag, for example `v0.1.0`.
+5. Create and push a version tag, for example `v0.2.0`.
 6. Create a GitHub Release and upload the generated zip files plus `checksums.txt`.
 
 The build regression tests check that generated skill/plugin archives and

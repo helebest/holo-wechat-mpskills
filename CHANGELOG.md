@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.2.0 - 2026-05-03
+
+### Changed
+
+- Refactored `wechat-mp-illustrate` into a prompt-driven text-to-image and
+  image-to-image helper.
+- Removed `python-dotenv`, article planning, `TEXT_MODEL`, `IMAGE_MODEL`, and
+  `MAX_DOC_LEN` from `wechat-mp-illustrate`.
+- Added OpenRouter image generation configuration through `OPENROUTER_API_KEY`,
+  optional `OPENROUTER_IMAGE_MODEL`, and explicit CLI arguments.
+- Documented the Codex-native `gpt-image-2` workflow for generated article
+  assets without an OpenRouter key.
+
+### Added
+
+- Added mock-tested OpenRouter image client coverage for credentials, model
+  precedence, text-to-image, image-to-image references, file output, and error
+  handling.
+- Added repository checks that keep `wechat-mp-illustrate` free of dotenv and
+  old article planning interfaces.
+
 ## v0.1.0 - 2026-05-02
 
 Initial versioned release.
