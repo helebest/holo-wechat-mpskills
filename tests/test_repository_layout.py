@@ -65,6 +65,35 @@ def test_plugin_manifest_versions_match_project_version() -> None:
         assert data["version"] == version
 
 
+def test_wechat_manage_does_not_depend_on_dotenv() -> None:
+    requirements = ROOT / "skills/wechat-mp-manage/scripts/requirements.txt"
+    assert "python-dotenv" not in requirements.read_text(encoding="utf-8")
+
+    forbidden = ["dotenv", "load_dotenv", "find_dotenv", "env_file"]
+    for script in (ROOT / "skills/wechat-mp-manage/scripts").glob("*.py"):
+        text = script.read_text(encoding="utf-8")
+        for token in forbidden:
+            assert token not in text, f"{script} must not reference {token}"
+
+
+def test_tracked_text_uses_wechat_mp_environment_names() -> None:
+    result = subprocess.run(
+        ["git", "ls-files"],
+        text=True,
+        capture_output=True,
+        check=True,
+        cwd=ROOT,
+    )
+    for relative_path in result.stdout.splitlines():
+        path = ROOT / relative_path
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        assert "WECHAT_" + "APPID" not in text, relative_path
+        assert "WECHAT_" + "APPSECRET" not in text, relative_path
+
+
 def test_typeset_smoke(tmp_path: Path) -> None:
     article = tmp_path / "article.md"
     article.write_text(

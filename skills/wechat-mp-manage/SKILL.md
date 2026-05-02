@@ -15,14 +15,15 @@ Install dependencies when needed:
 python -m pip install -r <skill-dir>/scripts/requirements.txt
 ```
 
-Provide credentials through environment variables or a project `.env` file:
+Provide credentials through process environment variables:
 
 ```text
-WECHAT_APPID=your_appid
-WECHAT_APPSECRET=your_appsecret
+WECHAT_MP_APPID=your_appid
+WECHAT_MP_APPSECRET=your_appsecret
 ```
 
-The client searches for `.env` from the current working directory upward.
+The manage skill does not load `.env` files by itself. Load local credential files
+before invoking scripts if your workflow uses them.
 
 ## Common Workflows
 

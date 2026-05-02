@@ -153,6 +153,58 @@ def test_wechat_client_gets_and_caches_access_token(tmp_path: Path) -> None:
     assert session.get_calls[0]["params"]["appid"] == "appid"
 
 
+def test_wechat_client_reads_wechat_mp_environment_variables(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    wechat_client = manage_module("wechat_client")
+    monkeypatch.delenv("WECHAT_" + "APPID", raising=False)
+    monkeypatch.delenv("WECHAT_" + "APPSECRET", raising=False)
+    monkeypatch.setenv("WECHAT_MP_APPID", "env-appid")
+    monkeypatch.setenv("WECHAT_MP_APPSECRET", "env-secret")
+    session = FakeSession(
+        get_responses=[FakeResponse({"access_token": "token-1", "expires_in": 7200})]
+    )
+    client = wechat_client.WeChatClient(token_cache_dir=str(tmp_path), session=session)
+
+    assert client.get_access_token() == "token-1"
+    assert session.get_calls[0]["params"]["appid"] == "env-appid"
+    assert session.get_calls[0]["params"]["secret"] == "env-secret"
+
+
+def test_wechat_client_ignores_legacy_environment_variable_names(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    wechat_client = manage_module("wechat_client")
+    monkeypatch.delenv("WECHAT_MP_APPID", raising=False)
+    monkeypatch.delenv("WECHAT_MP_APPSECRET", raising=False)
+    monkeypatch.setenv("WECHAT_" + "APPID", "legacy-appid")
+    monkeypatch.setenv("WECHAT_" + "APPSECRET", "legacy-secret")
+
+    with pytest.raises(ValueError, match="WECHAT_MP_APPID"):
+        wechat_client.WeChatClient(token_cache_dir=str(tmp_path), session=FakeSession())
+
+
+def test_wechat_client_explicit_credentials_override_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    wechat_client = manage_module("wechat_client")
+    monkeypatch.setenv("WECHAT_MP_APPID", "env-appid")
+    monkeypatch.setenv("WECHAT_MP_APPSECRET", "env-secret")
+    session = FakeSession(
+        get_responses=[FakeResponse({"access_token": "token-1", "expires_in": 7200})]
+    )
+    client = wechat_client.WeChatClient(
+        appid="explicit-appid",
+        appsecret="explicit-secret",
+        token_cache_dir=str(tmp_path),
+        session=session,
+    )
+
+    assert client.get_access_token() == "token-1"
+    assert session.get_calls[0]["params"]["appid"] == "explicit-appid"
+    assert session.get_calls[0]["params"]["secret"] == "explicit-secret"
+
+
 def test_wechat_client_token_response_errors_are_explicit(tmp_path: Path) -> None:
     wechat_client = manage_module("wechat_client")
 

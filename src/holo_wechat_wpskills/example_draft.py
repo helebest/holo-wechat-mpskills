@@ -161,7 +161,7 @@ def create_real_draft(prepared: PreparedExample, env_file: Path) -> str:
 
     _, submit_html_draft, client_modules = _load_manage_modules()
     _, WeChatClient = client_modules
-    client = WeChatClient(env_file=str(env_path), token_cache_dir=str(ROOT))
+    client = WeChatClient(token_cache_dir=str(ROOT))
 
     return submit_html_draft(
         str(prepared.html_path),
