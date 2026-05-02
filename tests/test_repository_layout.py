@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -17,6 +18,16 @@ EXAMPLE_ARTICLES = [
     "agent-skills-packaging",
 ]
 THEMES = ["minimal", "pier"]
+
+
+def project_version() -> str:
+    match = re.search(
+        r'^version\s*=\s*"([^"]+)"',
+        (ROOT / "pyproject.toml").read_text(encoding="utf-8"),
+        flags=re.MULTILINE,
+    )
+    assert match is not None
+    return match.group(1)
 
 
 def test_skills_validate() -> None:
@@ -39,6 +50,19 @@ def test_skill_scripts_show_help() -> None:
         )
         assert result.returncode == 0, result.stderr
         assert "usage:" in result.stdout
+
+
+def test_plugin_manifest_versions_match_project_version() -> None:
+    version = project_version()
+    manifests = [
+        ROOT / ".claude-plugin/plugin.json",
+        ROOT / ".codex-plugin/plugin.json",
+        ROOT / "openclaw.plugin.json",
+    ]
+
+    for manifest in manifests:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+        assert data["version"] == version
 
 
 def test_typeset_smoke(tmp_path: Path) -> None:
@@ -219,6 +243,10 @@ def test_example_draft_create_requires_ignored_env_before_api(tmp_path: Path) ->
 def test_build_outputs_are_generated_from_canonical_skills() -> None:
     artifacts = build(clean=True)
     artifact_names = {path.relative_to(ROOT / "dist").as_posix() for path in artifacts}
+    checksum_entries = (ROOT / "dist/checksums.txt").read_text(encoding="utf-8").splitlines()
+    checksummed_artifacts = [
+        path for path in artifacts if path.is_file() and path.name != "checksums.txt"
+    ]
 
     for skill_name in SKILL_NAMES:
         assert f"skills/{skill_name}.zip" in artifact_names
@@ -233,3 +261,6 @@ def test_build_outputs_are_generated_from_canonical_skills() -> None:
     assert "site/.well-known/skills/index.json" in artifact_names
     assert "site/.well-known/agent-skills/index.json" in artifact_names
     assert (ROOT / "dist/checksums.txt").exists()
+    assert len(checksum_entries) == len(checksummed_artifacts)
+    for artifact in checksummed_artifacts:
+        assert artifact.relative_to(ROOT / "dist").as_posix() in "\n".join(checksum_entries)

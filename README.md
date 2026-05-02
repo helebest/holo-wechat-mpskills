@@ -17,6 +17,26 @@ Build release artifacts:
 uv run holo-wechat-build
 ```
 
+Release artifacts are written to ignored `dist/` paths:
+
+- `dist/skills/*.zip`
+- `dist/plugins/*-wechat-mp-plugin.zip`
+- `dist/site/.well-known/skills/index.json`
+- `dist/site/.well-known/agent-skills/index.json`
+- `dist/checksums.txt`
+
+Prepare a versioned release:
+
+```bash
+uv sync --locked
+uv run ruff check .
+uv run ruff format --check .
+uv run holo-wechat-validate
+uv run python -m pytest --basetemp .tmp/pytest -p no:cacheprovider
+uv run holo-wechat-build
+git tag v0.1.0
+```
+
 Validate the repository:
 
 ```bash
