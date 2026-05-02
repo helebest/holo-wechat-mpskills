@@ -36,5 +36,8 @@ jobs:
       - name: Validate repository
         run: uv run holo-wechat-validate
 
+      - name: Prepare test temp directory
+        run: mkdir -p .tmp
+
       - name: Run tests
         run: uv run python -m pytest --basetemp .tmp/pytest -p no:cacheprovider

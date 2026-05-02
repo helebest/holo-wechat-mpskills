@@ -30,5 +30,6 @@ uv sync
 uv run ruff check .
 uv run ruff format --check .
 uv run holo-wechat-validate
+uv run python -c "from pathlib import Path; Path('.tmp').mkdir(exist_ok=True)"
 uv run python -m pytest --basetemp .tmp/pytest -p no:cacheprovider
 ```
