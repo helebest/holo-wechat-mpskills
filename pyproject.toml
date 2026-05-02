@@ -16,6 +16,7 @@ dependencies = [
 
 [project.scripts]
 holo-wechat-build = "holo_wechat_wpskills.build:main"
+holo-wechat-example-draft = "holo_wechat_wpskills.example_draft:main"
 holo-wechat-validate = "holo_wechat_wpskills.validate:main"
 
 [build-system]

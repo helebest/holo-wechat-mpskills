@@ -12,7 +12,17 @@ Each example lives under `examples/articles/<slug>/` and contains:
 
 ## Preview Without Credentials
 
-Generate WeChat-compatible HTML and a local preview:
+Generate WeChat-compatible HTML, a local preview, and a dry-run payload:
+
+```powershell
+uv run holo-wechat-example-draft
+```
+
+The command copies the default example into `.tmp/examples/wechat-draft-workflow/`, writes
+`article.html` and `article.preview.html`, then validates the draft payload without calling
+WeChat APIs.
+
+The equivalent manual flow is:
 
 ```powershell
 New-Item -ItemType Directory -Force .tmp/examples | Out-Null
@@ -48,7 +58,15 @@ git status --ignored --short
 
 Confirm `.env` appears as ignored before continuing.
 
-Then create a test draft:
+Then create a test draft with the guarded helper:
+
+```powershell
+uv run holo-wechat-example-draft --create-draft
+```
+
+On success, stdout contains only the created draft `media_id`. The command does not publish.
+
+The lower-level equivalent is:
 
 ```powershell
 uv run python skills/wechat-mp-manage/scripts/submit_html_draft.py `

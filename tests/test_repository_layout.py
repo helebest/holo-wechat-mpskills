@@ -170,6 +170,51 @@ def test_examples_typeset_and_dry_run_without_credentials(tmp_path: Path) -> Non
             assert payload["local_image_count"] >= 1
 
 
+def test_example_draft_command_generates_dry_run_payload(tmp_path: Path) -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "holo_wechat_wpskills.example_draft",
+            "--work-dir",
+            str(tmp_path / "examples"),
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+
+    payload = json.loads(result.stdout)
+    assert payload["mode"] == "dry-run"
+    assert payload["slug"] == "wechat-draft-workflow"
+    assert payload["theme"] == "pier"
+    assert payload["title"] == "把 Markdown 稳定送进公众号草稿箱"
+    assert payload["local_image_count"] >= 1
+    assert Path(payload["html_path"]).exists()
+    assert Path(payload["preview_path"]).exists()
+
+
+def test_example_draft_create_requires_ignored_env_before_api(tmp_path: Path) -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "holo_wechat_wpskills.example_draft",
+            "--work-dir",
+            str(tmp_path / "examples"),
+            "--env-file",
+            str(ROOT / "README.md"),
+            "--create-draft",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 1
+    assert "credential file is not ignored by git" in result.stderr
+
+
 def test_build_outputs_are_generated_from_canonical_skills() -> None:
     artifacts = build(clean=True)
     artifact_names = {path.relative_to(ROOT / "dist").as_posix() for path in artifacts}
