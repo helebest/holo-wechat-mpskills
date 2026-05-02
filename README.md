@@ -70,6 +70,27 @@ uv run python skills/wechat-mp-manage/scripts/submit_html_draft.py \
   --dry-run
 ```
 
+## Generate Article Images
+
+`wechat-mp-illustrate` is a prompt-to-image helper. It does not analyze the whole
+article or write prompts for you; the calling agent writes the final prompt and
+then generates a local asset.
+
+OpenRouter usage:
+
+```bash
+uv run python skills/wechat-mp-illustrate/scripts/illustrate.py \
+  --prompt-file cover.prompt.txt \
+  --output images/cover.png \
+  --model "$OPENROUTER_IMAGE_MODEL"
+```
+
+The script reads `OPENROUTER_API_KEY` and optional `OPENROUTER_IMAGE_MODEL` from
+the process environment, or accepts `--openrouter-api-key` / `--model` explicitly.
+It does not load `.env` files. In Codex, the skill documentation also allows the
+agent to use the built-in `gpt-image-2` image model and save the generated asset
+directly, without an OpenRouter key.
+
 ## Credential Safety
 
 CI never reads `.env`, never requires WeChat secrets, and never calls the WeChat

@@ -76,6 +76,41 @@ def test_wechat_manage_does_not_depend_on_dotenv() -> None:
             assert token not in text, f"{script} must not reference {token}"
 
 
+def test_wechat_illustrate_does_not_depend_on_dotenv_or_text_planning() -> None:
+    requirements = ROOT / "skills/wechat-mp-illustrate/scripts/requirements.txt"
+    assert "python-dotenv" not in requirements.read_text(encoding="utf-8")
+
+    forbidden_script_tokens = [
+        "dotenv",
+        "load_dotenv",
+        "find_dotenv",
+        "ArticleIllustrator",
+        "StoryAnalysis",
+        "MAX_DOC_LEN",
+        "TEXT_MODEL",
+    ]
+    for script in (ROOT / "skills/wechat-mp-illustrate/scripts").glob("*.py"):
+        text = script.read_text(encoding="utf-8")
+        for token in forbidden_script_tokens:
+            assert token not in text, f"{script} must not reference {token}"
+
+    docs = "\n".join(
+        [
+            (ROOT / "skills/wechat-mp-illustrate/SKILL.md").read_text(encoding="utf-8"),
+            (ROOT / "skills/wechat-mp-illustrate/references/provider.md").read_text(
+                encoding="utf-8"
+            ),
+            (ROOT / "README.md").read_text(encoding="utf-8"),
+        ]
+    )
+    assert "OPENROUTER_API_KEY" in docs
+    assert "OPENROUTER_IMAGE_MODEL" in docs
+    assert "gpt-image-2" in docs
+    assert "\nTEXT_MODEL=" not in docs
+    assert "\nIMAGE_MODEL=" not in docs
+    assert "MAX_DOC_LEN" not in docs
+
+
 def test_tracked_text_uses_wechat_mp_environment_names() -> None:
     result = subprocess.run(
         ["git", "ls-files"],
@@ -86,6 +121,8 @@ def test_tracked_text_uses_wechat_mp_environment_names() -> None:
     )
     for relative_path in result.stdout.splitlines():
         path = ROOT / relative_path
+        if not path.exists():
+            continue
         try:
             text = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
