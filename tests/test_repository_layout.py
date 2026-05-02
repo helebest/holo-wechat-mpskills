@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 import zipfile
@@ -8,6 +9,14 @@ from pathlib import Path
 
 from holo_wechat_wpskills.build import build
 from holo_wechat_wpskills.validate import ROOT, SKILL_NAMES, validate_all
+
+
+EXAMPLE_ARTICLES = [
+    "ci-quality-baseline",
+    "wechat-draft-workflow",
+    "agent-skills-packaging",
+]
+THEMES = ["minimal", "pier"]
 
 
 def test_skills_validate() -> None:
@@ -83,6 +92,82 @@ def test_manage_dry_run_does_not_require_credentials(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["title"] == "Draft"
     assert payload["local_image_count"] == 0
+
+
+def test_examples_have_complete_metadata_and_assets() -> None:
+    sys.path.insert(0, str(ROOT / "skills/wechat-mp-typeset/scripts"))
+    from markdown_converter import MarkdownConverter
+
+    converter = MarkdownConverter()
+    for slug in EXAMPLE_ARTICLES:
+        article_dir = ROOT / "examples" / "articles" / slug
+        parsed = converter.parse(str(article_dir / "article.md"))
+
+        assert parsed.meta.title
+        assert parsed.meta.summary
+        assert parsed.meta.cover
+        assert Path(parsed.meta.cover).exists()
+        assert parsed.images
+        assert all(Path(image).exists() for image in parsed.images)
+
+
+def test_examples_typeset_and_dry_run_without_credentials(tmp_path: Path) -> None:
+    source_root = ROOT / "examples" / "articles"
+    work_root = tmp_path / "articles"
+    shutil.copytree(source_root, work_root)
+
+    for slug in EXAMPLE_ARTICLES:
+        article_dir = work_root / slug
+        article = article_dir / "article.md"
+        cover = article_dir / "cover.png"
+
+        for theme in THEMES:
+            output = article_dir / f"article.{theme}.html"
+            preview = article_dir / f"article.{theme}.preview.html"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "skills/wechat-mp-typeset/scripts/typeset.py"),
+                    str(article),
+                    "--theme",
+                    theme,
+                    "--output",
+                    str(output),
+                    "--preview",
+                    str(preview),
+                ],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            assert result.returncode == 0, result.stderr
+
+            html = output.read_text(encoding="utf-8")
+            assert "<title>" in html
+            assert "<img" in html
+            assert 'style="' in html
+            assert "<table" in html or "<pre" in html
+            assert "article-container" in preview.read_text(encoding="utf-8")
+
+            dry_run = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "skills/wechat-mp-manage/scripts/submit_html_draft.py"),
+                    str(output),
+                    "--cover",
+                    str(cover),
+                    "--dry-run",
+                ],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            assert dry_run.returncode == 0, dry_run.stderr
+            payload = json.loads(dry_run.stdout)
+            assert payload["title"]
+            assert payload["body_length"] > 0
+            assert Path(payload["cover_path"]).exists()
+            assert payload["local_image_count"] >= 1
 
 
 def test_build_outputs_are_generated_from_canonical_skills() -> None:
