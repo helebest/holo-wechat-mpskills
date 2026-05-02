@@ -150,6 +150,12 @@ Programmatic use requires exact confirmation:
 dm.delete_draft(media_id, confirm_media_id=media_id)
 ```
 
+CLI use requires the same value in `--confirm-media-id`:
+
+```bash
+python scripts/manage.py draft delete --media-id MEDIA_ID --confirm-media-id MEDIA_ID
+```
+
 ### 获取草稿列表
 
 ```
@@ -189,6 +195,12 @@ Programmatic use requires exact confirmation:
 dm.publish_draft(media_id, confirm_media_id=media_id)
 ```
 
+CLI use requires the same value in `--confirm-media-id`:
+
+```bash
+python scripts/manage.py draft publish --media-id MEDIA_ID --confirm-media-id MEDIA_ID
+```
+
 ### 查询发布状态
 
 ```
@@ -222,6 +234,12 @@ Programmatic use requires exact confirmation:
 
 ```python
 dm.delete_published(article_id, confirm_article_id=article_id)
+```
+
+CLI use requires the same value in `--confirm-article-id`:
+
+```bash
+python scripts/manage.py published delete --article-id ARTICLE_ID --confirm-article-id ARTICLE_ID
 ```
 
 ## 数据统计

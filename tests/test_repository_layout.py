@@ -26,6 +26,7 @@ def test_skills_validate() -> None:
 def test_skill_scripts_show_help() -> None:
     scripts = [
         ROOT / "skills/wechat-mp-typeset/scripts/typeset.py",
+        ROOT / "skills/wechat-mp-manage/scripts/manage.py",
         ROOT / "skills/wechat-mp-manage/scripts/submit_html_draft.py",
         ROOT / "skills/wechat-mp-illustrate/scripts/illustrate.py",
     ]

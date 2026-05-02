@@ -38,8 +38,29 @@ The client searches for `.env` from the current working directory upward.
   python <skill-dir>/scripts/submit_html_draft.py article.html --cover cover.png --title "标题" --author "作者"
   ```
 
+- List or inspect drafts without publishing:
+
+  ```bash
+  python <skill-dir>/scripts/manage.py draft list --no-content
+  python <skill-dir>/scripts/manage.py draft get --media-id MEDIA_ID
+  ```
+
+- Delete or publish only with an exact confirmation value:
+
+  ```bash
+  python <skill-dir>/scripts/manage.py draft delete --media-id MEDIA_ID --confirm-media-id MEDIA_ID
+  python <skill-dir>/scripts/manage.py draft publish --media-id MEDIA_ID --confirm-media-id MEDIA_ID
+  ```
+
+- List or delete published articles:
+
+  ```bash
+  python <skill-dir>/scripts/manage.py published list --no-content
+  python <skill-dir>/scripts/manage.py published delete --article-id ARTICLE_ID --confirm-article-id ARTICLE_ID
+  ```
+
 - Use `scripts/material_manager.py` to upload permanent materials or article body images.
-- Use `scripts/draft_manager.py` to create, list, update, delete, publish, and query drafts.
+- Use `scripts/draft_manager.py` directly when custom Python integration is needed.
 - Use `scripts/stats_manager.py` for user, article, message, and interface statistics.
 
 ## API Behavior
@@ -58,10 +79,18 @@ The client searches for `.env` from the current working directory upward.
 
 ## Safety
 
-Creating drafts is allowed when credentials are configured. Publishing or deleting content requires exact code-level confirmation:
+Creating drafts is allowed when credentials are configured. Publishing or deleting content requires exact confirmation through both Python and CLI interfaces:
 
 ```python
 dm.publish_draft(media_id, confirm_media_id=media_id)
 dm.delete_draft(media_id, confirm_media_id=media_id)
 dm.delete_published(article_id, confirm_article_id=article_id)
 ```
+
+```bash
+python <skill-dir>/scripts/manage.py draft publish --media-id MEDIA_ID --confirm-media-id MEDIA_ID
+python <skill-dir>/scripts/manage.py draft delete --media-id MEDIA_ID --confirm-media-id MEDIA_ID
+python <skill-dir>/scripts/manage.py published delete --article-id ARTICLE_ID --confirm-article-id ARTICLE_ID
+```
+
+If the confirmation value is omitted or differs from the target ID, the command exits before sending the WeChat API request.
