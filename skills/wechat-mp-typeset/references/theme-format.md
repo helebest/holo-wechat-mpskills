@@ -51,7 +51,7 @@
 | `code_line_number` | 代码行号 |
 | `img`, `figure`, `figcaption` | 图片 |
 | `hr` | 分割线 |
-| `table`, `th`, `td` | 表格 |
+| `table_container`, `table`, `th`, `td` | 表格外层滚动容器和单元格 |
 
 ## 创建新主题
 

@@ -5,6 +5,7 @@
 """
 
 import re
+from html import escape, unescape
 from typing import Optional
 
 try:
@@ -30,6 +31,36 @@ class ThemeEngine:
         """获取标签的内联样式"""
         return self.loader.get_element_style(tag)
 
+    def _promote_image_paragraphs(self, html: str) -> str:
+        """Convert image-only paragraphs into styled figures with optional captions."""
+
+        def promote(match):
+            img_tag = match.group(1)
+            alt_match = re.search(r"""alt=(["'])(.*?)\1""", img_tag, flags=re.IGNORECASE)
+            caption = ""
+            if alt_match and alt_match.group(2).strip():
+                caption_text = escape(unescape(alt_match.group(2).strip()))
+                caption = f"<figcaption>{caption_text}</figcaption>"
+            return f"<figure>{img_tag}{caption}</figure>"
+
+        return re.sub(
+            r"<p>\s*(<img\b[^>]*>)\s*</p>",
+            promote,
+            html,
+            flags=re.IGNORECASE,
+        )
+
+    def _wrap_tables(self, html: str) -> str:
+        """Wrap tables in a lightweight scroll container for narrow screens."""
+        table_container_style = self.get_style("table_container")
+        if not table_container_style:
+            return html
+
+        def wrap(match):
+            return f'<section style="{table_container_style}">{match.group(0)}</section>'
+
+        return re.sub(r"<table\b[^>]*>.*?</table>", wrap, html, flags=re.DOTALL | re.IGNORECASE)
+
     def apply_styles(self, html: str) -> str:
         """
         为 HTML 添加内联样式
@@ -40,7 +71,7 @@ class ThemeEngine:
         Returns:
             添加样式后的 HTML
         """
-        styled_html = html
+        styled_html = self._promote_image_paragraphs(html)
 
         # 标签与样式的映射关系
         tag_mappings = [
@@ -179,7 +210,10 @@ class ThemeEngine:
             html_content = re.sub(r"<pre.*?>.*?</pre>", save_pre, html_content, flags=re.DOTALL)
 
             html_content = re.sub(
-                r"<code>([^<]+)</code>", f'<code style="{code_style}">\\1</code>', html_content
+                r"<code(?![^>]*style=)([^>]*)>([^<]+)</code>",
+                f'<code style="{code_style}"\\1>\\2</code>',
+                html_content,
+                flags=re.IGNORECASE,
             )
 
             for i, block in enumerate(pre_blocks):
@@ -210,6 +244,7 @@ class ThemeEngine:
         # 移除 thead 和 tbody 标签（微信不支持）
         styled_html = re.sub(r"</?thead>", "", styled_html, flags=re.IGNORECASE)
         styled_html = re.sub(r"</?tbody>", "", styled_html, flags=re.IGNORECASE)
+        styled_html = self._wrap_tables(styled_html)
 
         # 包装整体
         section_style = self.get_style("section")

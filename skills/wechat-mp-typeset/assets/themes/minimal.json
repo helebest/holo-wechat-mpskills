@@ -50,7 +50,11 @@
       "font-family": "{fonts.body}",
       "font-size": "16px",
       "line-height": "1.8",
-      "color": "{colors.text}"
+      "color": "{colors.text}",
+      "letter-spacing": "0",
+      "word-break": "break-word",
+      "overflow-wrap": "break-word",
+      "box-sizing": "border-box"
     },
 
     "h1": {
@@ -169,7 +173,10 @@
       "font-size": "13px",
       "line-height": "1.6",
       "background": "transparent",
-      "padding": "0"
+      "padding": "0",
+      "white-space": "pre-wrap",
+      "word-break": "break-word",
+      "overflow-wrap": "break-word"
     },
 
     "code_line_number": {
@@ -182,9 +189,24 @@
 
     "img": {
       "max-width": "100%",
+      "width": "100%",
       "height": "auto",
       "display": "block",
-      "margin": "24px auto"
+      "margin": "24px auto",
+      "box-sizing": "border-box"
+    },
+
+    "figure": {
+      "margin": "28px 0",
+      "text-align": "center"
+    },
+
+    "figcaption": {
+      "margin-top": "10px",
+      "font-size": "14px",
+      "line-height": "1.6",
+      "color": "{colors.text_tertiary}",
+      "text-align": "center"
     },
 
     "hr": {
@@ -196,8 +218,18 @@
 
     "table": {
       "width": "100%",
+      "table-layout": "fixed",
       "border-collapse": "collapse",
-      "margin": "24px 0"
+      "margin": "0",
+      "word-break": "break-word"
+    },
+
+    "table_container": {
+      "width": "100%",
+      "max-width": "100%",
+      "overflow-x": "auto",
+      "margin": "24px 0",
+      "box-sizing": "border-box"
     },
 
     "th": {
@@ -205,12 +237,18 @@
       "padding": "12px",
       "text-align": "left",
       "font-weight": "600",
-      "border": "1px solid {colors.border}"
+      "border": "1px solid {colors.border}",
+      "line-height": "1.6",
+      "vertical-align": "top",
+      "word-break": "break-word"
     },
 
     "td": {
       "padding": "12px",
-      "border": "1px solid {colors.border}"
+      "border": "1px solid {colors.border}",
+      "line-height": "1.6",
+      "vertical-align": "top",
+      "word-break": "break-word"
     }
   },
 
