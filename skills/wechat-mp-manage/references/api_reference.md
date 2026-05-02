@@ -21,6 +21,11 @@ GET https://api.weixin.qq.com/cgi-bin/token
 }
 ```
 
+Client behavior:
+- malformed token responses raise `WeChatAPIError`;
+- token errors `40001`, `40014`, and `42001` refresh the token and retry the original request once;
+- other API errors keep the original `errcode` and `errmsg`.
+
 ## 素材管理
 
 ### 上传永久素材
@@ -139,6 +144,12 @@ POST https://api.weixin.qq.com/cgi-bin/draft/delete
 {"media_id": "MEDIA_ID"}
 ```
 
+Programmatic use requires exact confirmation:
+
+```python
+dm.delete_draft(media_id, confirm_media_id=media_id)
+```
+
 ### 获取草稿列表
 
 ```
@@ -172,6 +183,12 @@ POST https://api.weixin.qq.com/cgi-bin/freepublish/submit
 
 返回 publish_id。
 
+Programmatic use requires exact confirmation:
+
+```python
+dm.publish_draft(media_id, confirm_media_id=media_id)
+```
+
 ### 查询发布状态
 
 ```
@@ -199,6 +216,12 @@ POST https://api.weixin.qq.com/cgi-bin/freepublish/delete
   ?access_token=ACCESS_TOKEN
 
 {"article_id": "ARTICLE_ID", "index": 0}
+```
+
+Programmatic use requires exact confirmation:
+
+```python
+dm.delete_published(article_id, confirm_article_id=article_id)
 ```
 
 ## 数据统计

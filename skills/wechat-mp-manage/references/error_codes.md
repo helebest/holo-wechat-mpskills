@@ -67,13 +67,18 @@ try:
     result = client.post("/cgi-bin/draft/add", json_data={...})
 except WeChatAPIError as e:
     if e.errcode == 40001:
-        # token 无效，自动重试
+        # token 无效，客户端会自动刷新并重试一次
         pass
+    elif e.errcode == 40164:
+        print("调用 IP 不在公众号后台白名单中，请加入白名单后重试")
     elif e.errcode == 45003:
         print("标题过长，请控制在64字符以内")
     else:
         print(f"API错误: [{e.errcode}] {e.errmsg}")
 ```
+
+`WeChatAPIError` preserves WeChat's original `errcode` and `errmsg`, including
+diagnostic text such as `rid` values.
 
 ## 调试工具
 

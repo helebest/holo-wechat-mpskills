@@ -34,6 +34,7 @@ class WeChatClient:
         appsecret: Optional[str] = None,
         token_cache_dir: Optional[str] = None,
         env_file: Optional[str] = None,
+        session: Optional[Any] = None,
     ):
         """
         初始化客户端
@@ -43,6 +44,7 @@ class WeChatClient:
             appsecret: 公众号 AppSecret，默认从环境变量 WECHAT_APPSECRET 读取
             token_cache_dir: token 缓存目录，默认当前目录
             env_file: .env 文件路径，默认自动查找
+            session: 可选 HTTP 会话对象，需提供 get/post/request 方法；测试中可注入 fake
         """
         # 自动加载 .env 文件（从当前目录向上查找）
         load_dotenv(env_file or find_dotenv(usecwd=True))
@@ -57,6 +59,7 @@ class WeChatClient:
             )
 
         self.token_cache_dir = Path(token_cache_dir or ".")
+        self.session = session or requests
         self._access_token: Optional[str] = None
         self._token_expires_at: float = 0
 
@@ -100,6 +103,36 @@ class WeChatClient:
         """检查 token 是否有效（预留 5 分钟缓冲）"""
         return self._access_token is not None and time.time() < self._token_expires_at - 300
 
+    def _read_json_response(self, resp: Any, context: str) -> Dict[str, Any]:
+        """Read a WeChat JSON response and normalize malformed responses."""
+        try:
+            return resp.json()
+        except ValueError as exc:
+            status = getattr(resp, "status_code", "unknown")
+            text = getattr(resp, "text", "")
+            suffix = f": {text[:200]}" if text else ""
+            raise WeChatAPIError(
+                -1, f"{context} returned non-JSON response (status {status}){suffix}"
+            ) from exc
+
+    def _raise_api_error(self, result: Dict[str, Any]) -> None:
+        errcode = result.get("errcode", 0)
+        if errcode != 0:
+            raise WeChatAPIError(errcode, result.get("errmsg", ""))
+
+    def _rewind_upload_files(self, files: Optional[Dict[str, Any]]) -> None:
+        """Reset upload streams before retrying a request after token refresh."""
+        if not files:
+            return
+        for file_value in files.values():
+            file_obj = (
+                file_value[1]
+                if isinstance(file_value, tuple) and len(file_value) > 1
+                else file_value
+            )
+            if hasattr(file_obj, "seek"):
+                file_obj.seek(0)
+
     def get_access_token(self, force_refresh: bool = False) -> str:
         """
         获取 access_token
@@ -116,11 +149,14 @@ class WeChatClient:
         url = f"{self.BASE_URL}/cgi-bin/token"
         params = {"grant_type": "client_credential", "appid": self.appid, "secret": self.appsecret}
 
-        resp = requests.get(url, params=params)
-        result = resp.json()
+        resp = self.session.get(url, params=params)
+        result = self._read_json_response(resp, "access_token")
 
         if "errcode" in result and result["errcode"] != 0:
-            raise WeChatAPIError(result["errcode"], result.get("errmsg", ""))
+            self._raise_api_error(result)
+
+        if "access_token" not in result:
+            raise WeChatAPIError(-1, "access_token response missing access_token")
 
         self._access_token = result["access_token"]
         self._token_expires_at = time.time() + result.get("expires_in", 7200)
@@ -156,27 +192,30 @@ class WeChatClient:
         url = f"{self.BASE_URL}{endpoint}"
 
         # 添加 access_token
-        params = params or {}
-        params["access_token"] = self.get_access_token()
+        base_params = dict(params or {})
+        request_params = dict(base_params)
+        request_params["access_token"] = self.get_access_token()
 
         # 处理 JSON 数据，确保中文不被转义
         headers = {}
         if json_data is not None:
-            data = json.dumps(json_data, ensure_ascii=False).encode("utf-8")
+            request_data = json.dumps(json_data, ensure_ascii=False).encode("utf-8")
             headers["Content-Type"] = "application/json"
+        else:
+            request_data = data
 
         # 发送请求
-        resp = requests.request(
+        resp = self.session.request(
             method=method,
             url=url,
-            params=params,
+            params=request_params,
             headers=headers if headers else None,
             files=files,
-            data=data,
+            data=request_data,
         )
 
         # 处理响应
-        result = resp.json()
+        result = self._read_json_response(resp, endpoint)
 
         # 检查错误
         errcode = result.get("errcode", 0)
@@ -184,8 +223,9 @@ class WeChatClient:
             # token 过期，自动重试
             if errcode in (40001, 40014, 42001) and auto_retry:
                 self.get_access_token(force_refresh=True)
+                self._rewind_upload_files(files)
                 return self.request(
-                    method, endpoint, params, json_data, files, data, auto_retry=False
+                    method, endpoint, base_params, json_data, files, data, auto_retry=False
                 )
             raise WeChatAPIError(errcode, result.get("errmsg", ""))
 
@@ -242,9 +282,9 @@ class WeChatClient:
         params["access_token"] = self.get_access_token()
 
         if json_data:
-            resp = requests.post(url, params=params, json=json_data)
+            resp = self.session.post(url, params=params, json=json_data)
         else:
-            resp = requests.get(url, params=params)
+            resp = self.session.get(url, params=params)
 
         # 检查是否是 JSON 错误响应
         content_type = resp.headers.get("Content-Type", "")
@@ -253,7 +293,7 @@ class WeChatClient:
                 result = resp.json()
                 if "errcode" in result and result["errcode"] != 0:
                     raise WeChatAPIError(result["errcode"], result.get("errmsg", ""))
-            except json.JSONDecodeError:
+            except ValueError:
                 pass
 
         return resp.content

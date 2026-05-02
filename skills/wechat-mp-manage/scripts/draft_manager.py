@@ -27,6 +27,13 @@ class DraftManager:
         """
         self.client = client
 
+    def _require_confirmation(
+        self, value: str, confirmed_value: Optional[str], parameter: str
+    ) -> None:
+        """Require exact confirmation before high-risk WeChat operations."""
+        if confirmed_value != value:
+            raise ValueError(f"Explicit confirmation required: pass {parameter}={value!r}")
+
     def _validate_article(self, article: Dict[str, Any]) -> Dict[str, Any]:
         """验证并规范化文章数据"""
         required_fields = ["title", "content"]
@@ -113,16 +120,18 @@ class DraftManager:
 
         return True
 
-    def delete_draft(self, media_id: str) -> bool:
+    def delete_draft(self, media_id: str, confirm_media_id: Optional[str] = None) -> bool:
         """
         删除草稿
 
         Args:
             media_id: 草稿 ID
+            confirm_media_id: 必须与 media_id 完全一致，防止误删
 
         Returns:
             是否删除成功
         """
+        self._require_confirmation(media_id, confirm_media_id, "confirm_media_id")
         self.client.post("/cgi-bin/draft/delete", json_data={"media_id": media_id})
         return True
 
@@ -186,16 +195,18 @@ class DraftManager:
 
     # ==================== 发布相关 ====================
 
-    def publish_draft(self, media_id: str) -> str:
+    def publish_draft(self, media_id: str, confirm_media_id: Optional[str] = None) -> str:
         """
         发布草稿
 
         Args:
             media_id: 草稿 ID
+            confirm_media_id: 必须与 media_id 完全一致，防止误发布
 
         Returns:
             publish_id: 发布任务 ID
         """
+        self._require_confirmation(media_id, confirm_media_id, "confirm_media_id")
         result = self.client.post("/cgi-bin/freepublish/submit", json_data={"media_id": media_id})
         return result["publish_id"]
 
@@ -252,17 +263,21 @@ class DraftManager:
             json_data={"offset": offset, "count": count, "no_content": 1 if no_content else 0},
         )
 
-    def delete_published(self, article_id: str, index: int = 0) -> bool:
+    def delete_published(
+        self, article_id: str, index: int = 0, confirm_article_id: Optional[str] = None
+    ) -> bool:
         """
         删除已发布文章
 
         Args:
             article_id: 文章 ID
             index: 要删除的文章索引（多图文时使用）
+            confirm_article_id: 必须与 article_id 完全一致，防止误删
 
         Returns:
             是否删除成功
         """
+        self._require_confirmation(article_id, confirm_article_id, "confirm_article_id")
         self.client.post(
             "/cgi-bin/freepublish/delete", json_data={"article_id": article_id, "index": index}
         )

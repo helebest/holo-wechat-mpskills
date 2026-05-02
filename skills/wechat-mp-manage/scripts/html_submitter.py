@@ -112,6 +112,26 @@ def _extract_body(html: str) -> str:
     return html
 
 
+def _validate_article_fields(
+    title: str,
+    author: Optional[str] = None,
+    digest: Optional[str] = None,
+) -> None:
+    """Validate local article fields before any WeChat API calls."""
+    if len(title) > 64:
+        raise HtmlSubmitError("标题长度不能超过64个字符")
+    if author and len(author) > 16:
+        raise HtmlSubmitError("作者名长度不能超过16个字符")
+    if digest and len(digest) > 128:
+        raise HtmlSubmitError("摘要长度不能超过128个字符")
+
+
+def _raise_for_missing_local_images(local_images: List[Tuple[str, str]]) -> None:
+    missing_images = [local_path for _, local_path in local_images if not Path(local_path).exists()]
+    if missing_images:
+        raise ImageUploadError(missing_images[0], "文件不存在")
+
+
 def inspect_html_draft(
     html_path: str,
     cover_path: str,
@@ -136,18 +156,11 @@ def inspect_html_draft(
     resolved_title = title or _extract_title(html_content)
     if not resolved_title:
         raise HtmlSubmitError("未提供标题且无法从 HTML 中提取")
-    if len(resolved_title) > 64:
-        raise HtmlSubmitError("标题长度不能超过64个字符")
-    if author and len(author) > 16:
-        raise HtmlSubmitError("作者名长度不能超过16个字符")
-    if digest and len(digest) > 128:
-        raise HtmlSubmitError("摘要长度不能超过128个字符")
+    _validate_article_fields(resolved_title, author, digest)
 
     body_html = _extract_body(html_content)
     local_images = _extract_local_images(body_html, html_file.parent)
-    missing_images = [local_path for _, local_path in local_images if not Path(local_path).exists()]
-    if missing_images:
-        raise ImageUploadError(missing_images[0], "文件不存在")
+    _raise_for_missing_local_images(local_images)
 
     return {
         "title": resolved_title,
@@ -211,12 +224,14 @@ def submit_html_draft(
         title = _extract_title(html_content)
         if not title:
             raise HtmlSubmitError("未提供标题且无法从 HTML 中提取")
+    _validate_article_fields(title, author, digest)
 
     # 3. 提取 body 内容
     body_html = _extract_body(html_content)
 
     # 4. 解析本地图片
     local_images = _extract_local_images(body_html, html_file.parent)
+    _raise_for_missing_local_images(local_images)
 
     try:
         from .wechat_client import WeChatClient

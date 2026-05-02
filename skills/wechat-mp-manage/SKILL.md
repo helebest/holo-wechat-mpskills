@@ -42,6 +42,13 @@ The client searches for `.env` from the current working directory upward.
 - Use `scripts/draft_manager.py` to create, list, update, delete, publish, and query drafts.
 - Use `scripts/stats_manager.py` for user, article, message, and interface statistics.
 
+## API Behavior
+
+- `WeChatClient` preserves WeChat `errcode` and `errmsg` in `WeChatAPIError`.
+- Expired access-token errors (`40001`, `40014`, `42001`) are retried once after refreshing the token.
+- Tests can inject a fake HTTP session through `WeChatClient(session=...)`; normal use does not need this parameter.
+- `submit_html_draft` performs local file, title, author, digest, and image checks before uploading anything.
+
 ## References
 
 - `references/article_format.md` for article payload and HTML constraints.
@@ -51,4 +58,10 @@ The client searches for `.env` from the current working directory upward.
 
 ## Safety
 
-Creating drafts is allowed when credentials are configured. Publishing a draft or deleting materials/articles should require explicit user confirmation.
+Creating drafts is allowed when credentials are configured. Publishing or deleting content requires exact code-level confirmation:
+
+```python
+dm.publish_draft(media_id, confirm_media_id=media_id)
+dm.delete_draft(media_id, confirm_media_id=media_id)
+dm.delete_published(article_id, confirm_article_id=article_id)
+```
