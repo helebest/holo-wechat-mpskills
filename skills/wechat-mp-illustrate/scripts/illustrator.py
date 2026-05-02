@@ -53,12 +53,11 @@ class ArticleIllustrator:
         self, markdown_content: str, custom_requirements: str = ""
     ) -> StoryAnalysis:
         requirements_text = (
-            custom_requirements.strip()
-            or "(Use your best judgment based on article content)"
+            custom_requirements.strip() or "(Use your best judgment based on article content)"
         )
 
         user_content = USER_PROMPT_STORY_ANALYSIS.format(
-            markdown_content=markdown_content[:self.max_doc_len],
+            markdown_content=markdown_content[: self.max_doc_len],
             custom_requirements=requirements_text,
         )
 
@@ -66,8 +65,8 @@ class ArticleIllustrator:
             model=self.text_model,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT_STORY_ANALYSIS},
-                {"role": "user", "content": user_content}
-            ]
+                {"role": "user", "content": user_content},
+            ],
         )
 
         data = self._parse_json(response)
@@ -134,9 +133,7 @@ class ArticleIllustrator:
             anchor_id = f"P{anchor_id}"
         return anchor_id
 
-    def _lookup_character_description(
-        self, char_id: str, char_map: dict[str, str]
-    ) -> str:
+    def _lookup_character_description(self, char_id: str, char_map: dict[str, str]) -> str:
         """Look up character description by ID with partial match fallback."""
         if char_id in char_map:
             return char_map[char_id]
@@ -225,7 +222,9 @@ class ArticleIllustrator:
         input_path = Path(markdown_path)
         content = input_path.read_text(encoding="utf-8")
         output_filename = f"{input_path.stem}_illustrated{input_path.suffix}"
-        return await self.run_from_content(content, output_dir, output_filename, custom_requirements)
+        return await self.run_from_content(
+            content, output_dir, output_filename, custom_requirements
+        )
 
     async def run_from_content(
         self,
@@ -246,7 +245,9 @@ class ArticleIllustrator:
         if custom_requirements:
             print(f"Custom requirements: {custom_requirements[:50]}...")
         analysis = await self.analyze_story(content_with_anchors, custom_requirements)
-        print(f"Analysis Complete: {len(analysis.characters)} characters, {len(analysis.scenes)} scenes.")
+        print(
+            f"Analysis Complete: {len(analysis.characters)} characters, {len(analysis.scenes)} scenes."
+        )
 
         print("Step 2: Injecting placeholders...")
         md_with_placeholders, _ = self.inject_placeholders(content_with_anchors, analysis)

@@ -101,7 +101,9 @@ def build_well_known(base_url: str) -> list[Path]:
             "publisher": {"name": "holo"},
             "skills": skills,
         }
-        output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        output.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
         outputs.append(output)
     return outputs
 
@@ -123,8 +125,12 @@ def build(base_url: str = "", clean: bool = True) -> list[Path]:
 
     artifacts: list[Path] = []
     artifacts.extend(build_skill_zips())
-    artifacts.append(build_plugin_zip("claude-wechat-mp-plugin", ROOT / ".claude-plugin" / "plugin.json"))
-    artifacts.append(build_plugin_zip("codex-wechat-mp-plugin", ROOT / ".codex-plugin" / "plugin.json"))
+    artifacts.append(
+        build_plugin_zip("claude-wechat-mp-plugin", ROOT / ".claude-plugin" / "plugin.json")
+    )
+    artifacts.append(
+        build_plugin_zip("codex-wechat-mp-plugin", ROOT / ".codex-plugin" / "plugin.json")
+    )
     artifacts.append(build_plugin_zip("openclaw-wechat-mp-plugin", ROOT / "openclaw.plugin.json"))
     artifacts.extend(build_well_known(base_url))
     artifacts.append(write_checksums([path for path in artifacts if path.is_file()]))
@@ -133,8 +139,12 @@ def build(base_url: str = "", clean: bool = True) -> list[Path]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build WeChat MP skill release artifacts.")
-    parser.add_argument("--base-url", default="", help="Base URL used in well-known discovery indexes.")
-    parser.add_argument("--no-clean", action="store_true", help="Do not remove dist/ before building.")
+    parser.add_argument(
+        "--base-url", default="", help="Base URL used in well-known discovery indexes."
+    )
+    parser.add_argument(
+        "--no-clean", action="store_true", help="Do not remove dist/ before building."
+    )
     args = parser.parse_args()
 
     artifacts = build(base_url=args.base_url, clean=not args.no_clean)

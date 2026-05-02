@@ -8,12 +8,19 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Optional, List, Tuple
+from typing import TYPE_CHECKING, Optional, List, Tuple
 from urllib.parse import unquote
+
+if TYPE_CHECKING:
+    try:
+        from .wechat_client import WeChatClient
+    except ImportError:
+        from wechat_client import WeChatClient
 
 
 class HtmlSubmitError(Exception):
     """HTML 提交错误"""
+
     pass
 
 
@@ -91,7 +98,7 @@ def _extract_local_images(html: str, html_dir: Path) -> List[Tuple[str, str]]:
 
 def _extract_title(html: str) -> Optional[str]:
     """从 HTML 中提取标题"""
-    match = re.search(r'<title>(.+?)</title>', html, re.IGNORECASE | re.DOTALL)
+    match = re.search(r"<title>(.+?)</title>", html, re.IGNORECASE | re.DOTALL)
     if match:
         return match.group(1).strip()
     return None
@@ -99,7 +106,7 @@ def _extract_title(html: str) -> Optional[str]:
 
 def _extract_body(html: str) -> str:
     """从 HTML 中提取 body 内容"""
-    match = re.search(r'<body[^>]*>(.*?)</body>', html, re.IGNORECASE | re.DOTALL)
+    match = re.search(r"<body[^>]*>(.*?)</body>", html, re.IGNORECASE | re.DOTALL)
     if match:
         return match.group(1).strip()
     return html
@@ -138,9 +145,7 @@ def inspect_html_draft(
 
     body_html = _extract_body(html_content)
     local_images = _extract_local_images(body_html, html_file.parent)
-    missing_images = [
-        local_path for _, local_path in local_images if not Path(local_path).exists()
-    ]
+    missing_images = [local_path for _, local_path in local_images if not Path(local_path).exists()]
     if missing_images:
         raise ImageUploadError(missing_images[0], "文件不存在")
 
@@ -162,7 +167,7 @@ def submit_html_draft(
     title: Optional[str] = None,
     author: Optional[str] = None,
     digest: Optional[str] = None,
-    client: Optional[WeChatClient] = None
+    client: Optional[WeChatClient] = None,
 ) -> str:
     """
     提交 HTML 文章到微信公众号草稿
@@ -251,11 +256,7 @@ def submit_html_draft(
 
     # 7. 创建草稿
     article = create_simple_article(
-        title=title,
-        content=body_html,
-        thumb_media_id=cover_media_id,
-        author=author,
-        digest=digest
+        title=title, content=body_html, thumb_media_id=cover_media_id, author=author, digest=digest
     )
 
     media_id = dm.create_draft([article])

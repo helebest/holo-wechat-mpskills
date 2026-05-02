@@ -3,27 +3,24 @@
 
 生成可在浏览器中直接打开的 HTML 预览文件
 """
+
 import re
 from pathlib import Path
 from typing import Dict, List
 from urllib.parse import quote
 
 try:
-    from .markdown_converter import MarkdownConverter, ParsedArticle
+    from .markdown_converter import MarkdownConverter
     from .style_engine import ThemeEngine
 except ImportError:
-    from markdown_converter import MarkdownConverter, ParsedArticle
+    from markdown_converter import MarkdownConverter
     from style_engine import ThemeEngine
 
 
 class PreviewGenerator:
     """预览生成器：生成本地可预览的 HTML 文件"""
 
-    def __init__(
-        self,
-        theme_path: str = None,
-        theme_name: str = "minimal"
-    ):
+    def __init__(self, theme_path: str = None, theme_name: str = "minimal"):
         """
         初始化预览生成器
 
@@ -47,7 +44,7 @@ class PreviewGenerator:
         abs_path = Path(path).resolve()
 
         # Windows 路径处理
-        path_str = str(abs_path).replace('\\', '/')
+        path_str = str(abs_path).replace("\\", "/")
         if abs_path.drive:
             # Windows: file:///C:/path/to/file
             return f"file:///{quote(path_str, safe='/:')}"
@@ -71,7 +68,7 @@ class PreviewGenerator:
         # 构建文件名到 file:// URL 的映射
         url_mapping: Dict[str, str] = {}
         for img_path in images:
-            if img_path.startswith(('http://', 'https://')):
+            if img_path.startswith(("http://", "https://")):
                 continue
             filename = Path(img_path).name
             url_mapping[filename] = self._to_file_url(img_path)
@@ -100,7 +97,7 @@ class PreviewGenerator:
         Returns:
             完整的 HTML 文档
         """
-        return f'''<!DOCTYPE html>
+        return f"""<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
@@ -132,7 +129,7 @@ class PreviewGenerator:
 {content}
     </div>
 </body>
-</html>'''
+</html>"""
 
     def generate(self, md_path: str) -> str:
         """
@@ -156,11 +153,7 @@ class PreviewGenerator:
         # 包装为完整 HTML
         return self._wrap_html(styled_html, parsed.meta.title)
 
-    def save(
-        self,
-        md_path: str,
-        output_path: str = None
-    ) -> str:
+    def save(self, md_path: str, output_path: str = None) -> str:
         """
         生成预览 HTML 并保存到文件
 
@@ -174,9 +167,9 @@ class PreviewGenerator:
         html = self.generate(md_path)
 
         if output_path is None:
-            output_path = Path(md_path).with_suffix('.preview.html')
+            output_path = Path(md_path).with_suffix(".preview.html")
 
         output_path = Path(output_path)
-        output_path.write_text(html, encoding='utf-8')
+        output_path.write_text(html, encoding="utf-8")
 
         return str(output_path.resolve())

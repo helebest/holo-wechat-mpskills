@@ -22,3 +22,13 @@ Validate the repository:
 ```bash
 uv run holo-wechat-validate
 ```
+
+Run the local quality baseline used by CI:
+
+```bash
+uv sync
+uv run ruff check .
+uv run ruff format --check .
+uv run holo-wechat-validate
+uv run python -m pytest --basetemp .tmp/pytest -p no:cacheprovider
+```

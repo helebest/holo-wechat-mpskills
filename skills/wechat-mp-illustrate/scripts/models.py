@@ -17,18 +17,14 @@ class SceneDescription(BaseModel):
     scene_description: str = Field(
         description="Detailed visual description of the scene action and environment"
     )
-    characters: list[str] = Field(
-        description="List of character IDs present in this scene"
-    )
+    characters: list[str] = Field(description="List of character IDs present in this scene")
     insert_after: str = Field(
         description="Anchor ID (e.g., 'P3') indicating where to insert the illustration"
     )
     final_prompt: str | None = Field(
         default=None, description="Generated prompt for image generation"
     )
-    image_path: str | None = Field(
-        default=None, description="Path to the generated image file"
-    )
+    image_path: str | None = Field(default=None, description="Path to the generated image file")
 
 
 class StoryAnalysis(BaseModel):
