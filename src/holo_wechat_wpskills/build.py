@@ -9,7 +9,17 @@ import shutil
 import zipfile
 from pathlib import Path
 
-from .validate import ROOT, SKILL_NAMES, SKILLS_DIR, parse_frontmatter, validate_all
+from .validate import (
+    CLAUDE_PLUGIN_MANIFEST,
+    CODEX_PLUGIN_MANIFEST,
+    OPENCLAW_PLUGIN_MANIFEST,
+    PLUGIN_ROOT,
+    ROOT,
+    SKILL_NAMES,
+    SKILLS_DIR,
+    parse_frontmatter,
+    validate_all,
+)
 
 DIST_DIR = ROOT / "dist"
 EXCLUDE_NAMES = {
@@ -65,7 +75,7 @@ def build_plugin_zip(name: str, manifest: Path) -> Path:
     output = DIST_DIR / "plugins" / f"{name}.zip"
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as archive:
-        archive.write(manifest, manifest.relative_to(ROOT).as_posix())
+        archive.write(manifest, manifest.relative_to(PLUGIN_ROOT).as_posix())
         add_tree_to_zip(archive, SKILLS_DIR, Path("skills"))
     return output
 
@@ -125,13 +135,9 @@ def build(base_url: str = "", clean: bool = True) -> list[Path]:
 
     artifacts: list[Path] = []
     artifacts.extend(build_skill_zips())
-    artifacts.append(
-        build_plugin_zip("claude-wechat-mp-plugin", ROOT / ".claude-plugin" / "plugin.json")
-    )
-    artifacts.append(
-        build_plugin_zip("codex-wechat-mp-plugin", ROOT / ".codex-plugin" / "plugin.json")
-    )
-    artifacts.append(build_plugin_zip("openclaw-wechat-mp-plugin", ROOT / "openclaw.plugin.json"))
+    artifacts.append(build_plugin_zip("claude-holo-wechat-mp-plugin", CLAUDE_PLUGIN_MANIFEST))
+    artifacts.append(build_plugin_zip("codex-holo-wechat-mp-plugin", CODEX_PLUGIN_MANIFEST))
+    artifacts.append(build_plugin_zip("openclaw-holo-wechat-mp-plugin", OPENCLAW_PLUGIN_MANIFEST))
     artifacts.extend(build_well_known(base_url))
     artifacts.append(write_checksums([path for path in artifacts if path.is_file()]))
     return artifacts

@@ -12,10 +12,11 @@ into image files.
 
 ## OpenRouter Setup
 
-Install dependencies when needed:
+Use `uv` for local dependency and script execution. From this repository, install
+the locked development environment once:
 
 ```bash
-python -m pip install -r <skill-dir>/scripts/requirements.txt
+uv sync
 ```
 
 Configure OpenRouter in the process environment:
@@ -34,7 +35,7 @@ if you keep credentials locally.
 Generate from a prompt:
 
 ```bash
-python <skill-dir>/scripts/illustrate.py \
+uv run python <skill-dir>/scripts/illustrate.py \
   --prompt-file cover.prompt.txt \
   --output images/cover.png \
   --aspect-ratio 16:9
@@ -43,7 +44,7 @@ python <skill-dir>/scripts/illustrate.py \
 Generate from a prompt plus one or more reference images:
 
 ```bash
-python <skill-dir>/scripts/illustrate.py \
+uv run python <skill-dir>/scripts/illustrate.py \
   --prompt "Create a clean WeChat article cover in the same visual direction." \
   --reference-image references/style.png \
   --output images/cover.png \

@@ -9,10 +9,11 @@ Use this skill for WeChat Official Account API operations after content has been
 
 ## Setup
 
-Install dependencies when needed:
+Use `uv` for local dependency and script execution. From this repository, install
+the locked development environment once:
 
 ```bash
-python -m pip install -r <skill-dir>/scripts/requirements.txt
+uv sync
 ```
 
 Provide credentials through process environment variables:
@@ -30,34 +31,34 @@ before invoking scripts if your workflow uses them.
 - Validate an HTML draft without calling WeChat:
 
   ```bash
-  python <skill-dir>/scripts/submit_html_draft.py article.html --cover cover.png --dry-run
+  uv run python <skill-dir>/scripts/submit_html_draft.py article.html --cover cover.png --dry-run
   ```
 
 - Submit a prepared HTML file to the draft box:
 
   ```bash
-  python <skill-dir>/scripts/submit_html_draft.py article.html --cover cover.png --title "标题" --author "作者"
+  uv run python <skill-dir>/scripts/submit_html_draft.py article.html --cover cover.png --title "标题" --author "作者"
   ```
 
 - List or inspect drafts without publishing:
 
   ```bash
-  python <skill-dir>/scripts/manage.py draft list --no-content
-  python <skill-dir>/scripts/manage.py draft get --media-id MEDIA_ID
+  uv run python <skill-dir>/scripts/manage.py draft list --no-content
+  uv run python <skill-dir>/scripts/manage.py draft get --media-id MEDIA_ID
   ```
 
 - Delete or publish only with an exact confirmation value:
 
   ```bash
-  python <skill-dir>/scripts/manage.py draft delete --media-id MEDIA_ID --confirm-media-id MEDIA_ID
-  python <skill-dir>/scripts/manage.py draft publish --media-id MEDIA_ID --confirm-media-id MEDIA_ID
+  uv run python <skill-dir>/scripts/manage.py draft delete --media-id MEDIA_ID --confirm-media-id MEDIA_ID
+  uv run python <skill-dir>/scripts/manage.py draft publish --media-id MEDIA_ID --confirm-media-id MEDIA_ID
   ```
 
 - List or delete published articles:
 
   ```bash
-  python <skill-dir>/scripts/manage.py published list --no-content
-  python <skill-dir>/scripts/manage.py published delete --article-id ARTICLE_ID --confirm-article-id ARTICLE_ID
+  uv run python <skill-dir>/scripts/manage.py published list --no-content
+  uv run python <skill-dir>/scripts/manage.py published delete --article-id ARTICLE_ID --confirm-article-id ARTICLE_ID
   ```
 
 - Use `scripts/material_manager.py` to upload permanent materials or article body images.
@@ -89,9 +90,9 @@ dm.delete_published(article_id, confirm_article_id=article_id)
 ```
 
 ```bash
-python <skill-dir>/scripts/manage.py draft publish --media-id MEDIA_ID --confirm-media-id MEDIA_ID
-python <skill-dir>/scripts/manage.py draft delete --media-id MEDIA_ID --confirm-media-id MEDIA_ID
-python <skill-dir>/scripts/manage.py published delete --article-id ARTICLE_ID --confirm-article-id ARTICLE_ID
+uv run python <skill-dir>/scripts/manage.py draft publish --media-id MEDIA_ID --confirm-media-id MEDIA_ID
+uv run python <skill-dir>/scripts/manage.py draft delete --media-id MEDIA_ID --confirm-media-id MEDIA_ID
+uv run python <skill-dir>/scripts/manage.py published delete --article-id ARTICLE_ID --confirm-article-id ARTICLE_ID
 ```
 
 If the confirmation value is omitted or differs from the target ID, the command exits before sending the WeChat API request.

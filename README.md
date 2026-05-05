@@ -4,9 +4,10 @@ Agent Skills for producing WeChat Official Account articles: typesetting Markdow
 creating publication-ready images, managing WeChat drafts/materials, and keeping
 publishing actions explicit and auditable.
 
-This repository treats `skills/` as the canonical source. Build outputs, plugin
-archives, and discovery indexes are generated from that source instead of being
-maintained by hand.
+This repository treats `skills/` as the canonical AgentSkills source. The
+`plugins/holo-wechat-mp/` directory is the shared plugin wrapper for Codex,
+Claude Code, and OpenClaw; its generated `skills/` copy is synced from the root
+source and is not maintained by hand.
 
 ## What Are These Skills?
 
@@ -29,6 +30,9 @@ Clone the repository and install the development environment:
 ```bash
 uv sync
 ```
+
+Local package management and script invocation use `uv`; run project commands
+with `uv run ...`.
 
 Generate a WeChat-compatible HTML article from the default example without any
 WeChat credentials:
@@ -141,7 +145,7 @@ Release artifacts include:
 | Path | Contents |
 | --- | --- |
 | `dist/skills/*.zip` | Individual skill archives. |
-| `dist/plugins/*-wechat-mp-plugin.zip` | Claude, Codex, and OpenClaw plugin archives. |
+| `dist/plugins/*-holo-wechat-mp-plugin.zip` | Claude, Codex, and OpenClaw plugin archives. |
 | `dist/site/.well-known/skills/index.json` | Skills discovery index. |
 | `dist/site/.well-known/agent-skills/index.json` | Agent Skills discovery index. |
 | `dist/checksums.txt` | SHA-256 checksums for generated artifacts. |
@@ -155,6 +159,19 @@ uv run holo-wechat-build
 `dist/` is ignored by Git. Release assets are generated, verified, and uploaded
 separately.
 
+For local plugin testing, generate the ignored plugin skill copy:
+
+```bash
+uv run holo-wechat-sync-plugin
+```
+
+Codex can discover the plugin through `.agents/plugins/marketplace.json`, which
+points to `./plugins/holo-wechat-mp`. Claude Code can load the same wrapper with
+`claude --plugin-dir ./plugins/holo-wechat-mp`. OpenClaw can either load the root
+`skills/` directory directly or use the generated OpenClaw plugin archive. Hermes
+Agent should continue to consume the root `skills/` directory, the generated
+skill zips, or the well-known discovery index.
+
 ## Development
 
 Run the same quality baseline used by GitHub Actions:
@@ -164,6 +181,7 @@ uv sync --locked
 uv run ruff check .
 uv run ruff format --check .
 uv run holo-wechat-validate
+uv run holo-wechat-sync-plugin --check
 uv run python -m pytest --basetemp .tmp/pytest -p no:cacheprovider
 ```
 
@@ -182,9 +200,10 @@ skill's `scripts/requirements.txt`.
 1. Update `pyproject.toml` and plugin manifest versions together.
 2. Update `CHANGELOG.md`.
 3. Run the local quality baseline.
-4. Build release artifacts with `uv run holo-wechat-build`.
-5. Create and push a version tag, for example `v0.2.0`.
-6. Create a GitHub Release and upload the generated zip files plus `checksums.txt`.
+4. Verify plugin sync with `uv run holo-wechat-sync-plugin --check`.
+5. Build release artifacts with `uv run holo-wechat-build`.
+6. Create and push a version tag, for example `v0.2.0`.
+7. Create a GitHub Release and upload the generated zip files plus `checksums.txt`.
 
 The build regression tests check that generated skill/plugin archives and
 well-known indexes are produced from the canonical `skills/` directory.

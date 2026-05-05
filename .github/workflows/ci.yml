@@ -36,6 +36,9 @@ jobs:
       - name: Validate repository
         run: uv run holo-wechat-validate
 
+      - name: Validate plugin sync
+        run: uv run holo-wechat-sync-plugin --check
+
       - name: Prepare test temp directory
         run: mkdir -p .tmp
 

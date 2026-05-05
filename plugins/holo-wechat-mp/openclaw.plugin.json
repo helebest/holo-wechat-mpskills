@@ -1,5 +1,5 @@
 {
-  "name": "wechat-mp",
+  "name": "holo-wechat-mp",
   "version": "0.2.0",
   "description": "WeChat Official Account skills for article production and publishing workflows.",
   "skills": ["./skills"]

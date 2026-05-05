@@ -10,16 +10,17 @@ Use this skill to turn Markdown articles into WeChat Official Account compatible
 ## Workflow
 
 1. Inspect the Markdown front matter for `title`, `cover`, `author`, `summary`, `category`, and `keywords`.
-2. Install Python dependencies when needed:
+2. Use `uv` for local dependency and script execution. From this repository,
+   install the locked development environment once:
 
    ```bash
-   python -m pip install -r <skill-dir>/scripts/requirements.txt
+   uv sync
    ```
 
 3. Generate HTML and an optional browser preview:
 
    ```bash
-   python <skill-dir>/scripts/typeset.py article.md --output article.html --preview article.preview.html --theme minimal
+   uv run python <skill-dir>/scripts/typeset.py article.md --output article.html --preview article.preview.html --theme minimal
    ```
 
 4. Use `--raw` when another workflow needs only the styled HTML fragment.

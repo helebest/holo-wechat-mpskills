@@ -64,7 +64,7 @@
 
 ```bash
 # CLI 方式
-python <skill-dir>/scripts/typeset.py article.md --theme minimal --preview article.preview.html
+uv run python <skill-dir>/scripts/typeset.py article.md --theme minimal --preview article.preview.html
 
 # 程序方式
 from scripts.style_engine import ThemeEngine
