@@ -1,0 +1,20 @@
+{
+  "name": "holo-wechat-mpskills",
+  "interface": {
+    "displayName": "holo WeChat MP"
+  },
+  "plugins": [
+    {
+      "name": "holo-wechat-mp",
+      "source": {
+        "source": "local",
+        "path": "./plugins/holo-wechat-mp"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -9,6 +9,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SKILLS_DIR = ROOT / "skills"
+PLUGIN_NAME = "holo-wechat-mp"
+PLUGIN_ROOT = ROOT / "plugins" / PLUGIN_NAME
+PLUGIN_SKILLS_DIR = PLUGIN_ROOT / "skills"
+CODEX_PLUGIN_MANIFEST = PLUGIN_ROOT / ".codex-plugin" / "plugin.json"
+CLAUDE_PLUGIN_MANIFEST = PLUGIN_ROOT / ".claude-plugin" / "plugin.json"
+OPENCLAW_PLUGIN_MANIFEST = PLUGIN_ROOT / "openclaw.plugin.json"
+MARKETPLACE_PATH = ROOT / ".agents" / "plugins" / "marketplace.json"
 SKILL_NAMES = [
     "wechat-mp-typeset",
     "wechat-mp-manage",
@@ -30,6 +37,20 @@ NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 class ValidationError(Exception):
     """Raised when repository validation fails."""
+
+
+def load_json(path: Path) -> dict:
+    if not path.exists():
+        raise ValidationError(f"Missing {path}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def project_version() -> str:
+    text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    match = re.search(r'^version\s*=\s*"([^"]+)"', text, flags=re.MULTILINE)
+    if match is None:
+        raise ValidationError("pyproject.toml is missing project version")
+    return match.group(1)
 
 
 def parse_frontmatter(path: Path) -> dict[str, str]:
@@ -76,15 +97,64 @@ def validate_skill(skill_dir: Path) -> None:
 
 
 def validate_plugin_manifests() -> None:
-    manifests = [
+    legacy_manifests = [
         ROOT / ".claude-plugin" / "plugin.json",
         ROOT / ".codex-plugin" / "plugin.json",
         ROOT / "openclaw.plugin.json",
     ]
-    for manifest in manifests:
-        data = json.loads(manifest.read_text(encoding="utf-8"))
-        if data.get("skills") not in ("./skills/", ["./skills"]):
-            raise ValidationError(f"{manifest} must reference the canonical skills directory")
+    for manifest in legacy_manifests:
+        if manifest.exists():
+            raise ValidationError(f"{manifest} is a legacy root plugin manifest; use {PLUGIN_ROOT}")
+
+    version = project_version()
+    expected = {
+        CLAUDE_PLUGIN_MANIFEST: "./skills/",
+        CODEX_PLUGIN_MANIFEST: "./skills/",
+        OPENCLAW_PLUGIN_MANIFEST: ["./skills"],
+    }
+    for manifest, expected_skills in expected.items():
+        data = load_json(manifest)
+        if data.get("name") != PLUGIN_NAME:
+            raise ValidationError(f"{manifest} name must be {PLUGIN_NAME}")
+        if data.get("version") != version:
+            raise ValidationError(f"{manifest} version must match pyproject.toml")
+        if data.get("skills") != expected_skills:
+            raise ValidationError(f"{manifest} skills must be {expected_skills!r}")
+
+
+def validate_marketplace() -> None:
+    payload = load_json(MARKETPLACE_PATH)
+    plugins = payload.get("plugins")
+    if not isinstance(plugins, list):
+        raise ValidationError(f"{MARKETPLACE_PATH} plugins must be an array")
+
+    matches = [
+        entry for entry in plugins if isinstance(entry, dict) and entry.get("name") == PLUGIN_NAME
+    ]
+    if len(matches) != 1:
+        raise ValidationError(f"{MARKETPLACE_PATH} must contain exactly one {PLUGIN_NAME} entry")
+
+    entry = matches[0]
+    if entry.get("source") != {"source": "local", "path": f"./plugins/{PLUGIN_NAME}"}:
+        raise ValidationError(f"{MARKETPLACE_PATH} has invalid source for {PLUGIN_NAME}")
+    if entry.get("policy") != {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL",
+    }:
+        raise ValidationError(f"{MARKETPLACE_PATH} has invalid policy for {PLUGIN_NAME}")
+    if entry.get("category") != "Productivity":
+        raise ValidationError(f"{MARKETPLACE_PATH} category must be Productivity")
+
+
+def validate_generated_plugin_skills() -> None:
+    if not PLUGIN_SKILLS_DIR.exists():
+        return
+
+    actual = sorted(path.name for path in PLUGIN_SKILLS_DIR.iterdir() if path.is_dir())
+    if actual != sorted(SKILL_NAMES):
+        raise ValidationError(f"Unexpected generated plugin skills: {actual}")
+    for skill_name in SKILL_NAMES:
+        validate_skill(PLUGIN_SKILLS_DIR / skill_name)
 
 
 def validate_all() -> None:
@@ -99,6 +169,8 @@ def validate_all() -> None:
         validate_skill(SKILLS_DIR / skill_name)
 
     validate_plugin_manifests()
+    validate_marketplace()
+    validate_generated_plugin_skills()
 
 
 def main() -> int:

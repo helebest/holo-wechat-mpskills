@@ -2,10 +2,12 @@
 .uv-cache/
 .ruff_cache/
 .pytest_cache/
+.pytest-*/
 .tmp/
 __pycache__/
 *.pyc
 dist/
+plugins/holo-wechat-mp/skills/
 .coverage
 .env
 .wechat_token_cache.json

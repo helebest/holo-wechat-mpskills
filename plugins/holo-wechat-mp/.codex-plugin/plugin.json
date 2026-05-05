@@ -1,5 +1,5 @@
 {
-  "name": "wechat-mp",
+  "name": "holo-wechat-mp",
   "version": "0.2.0",
   "description": "WeChat Official Account skills for article typesetting, illustration, draft management, and publishing workflows.",
   "author": {
@@ -9,7 +9,7 @@
   "keywords": ["wechat", "wechat-mp", "official-account", "skills"],
   "skills": "./skills/",
   "interface": {
-    "displayName": "WeChat MP",
+    "displayName": "holo WeChat MP",
     "shortDescription": "Prepare and manage WeChat Official Account articles.",
     "longDescription": "Skills for Markdown-to-WeChat HTML typesetting, AI article illustrations, WeChat Official Account draft/material management, and safe publishing workflows.",
     "developerName": "holo",
