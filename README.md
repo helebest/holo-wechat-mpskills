@@ -1,27 +1,51 @@
-# holo-wechat-mpskills
+# Holo WeChat MP Skills
 
-Agent Skills for producing WeChat Official Account articles: typesetting Markdown,
-creating publication-ready images, managing WeChat drafts/materials, and keeping
-publishing actions explicit and auditable.
+[![CI](https://github.com/helebest/holo-wechat-mpskills/actions/workflows/ci.yml/badge.svg)](https://github.com/helebest/holo-wechat-mpskills/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/helebest/holo-wechat-mpskills)](https://github.com/helebest/holo-wechat-mpskills/releases)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/helebest/holo-wechat-mpskills/blob/main/LICENSE)
 
-This repository treats `skills/` as the canonical AgentSkills source. The
-`plugins/holo-wechat-mp/` directory is the shared plugin wrapper for Codex,
-Claude Code, and OpenClaw; its generated `skills/` copy is synced from the root
-source and is not maintained by hand.
+Production-ready Agent Skills for WeChat Official Account article operations,
+packaged as local plugins for Codex, Claude Code, OpenClaw, and
+Hermes-compatible discovery flows. The toolkit covers Markdown-to-WeChat
+typesetting, generated image handoff, draft/material management, and explicit
+publishing guardrails.
 
-## What Are These Skills?
+## Features
 
-Skills are self-contained folders of instructions, scripts, references, and assets
-that an agent can load when a task needs specialized behavior. In this repo, each
-skill focuses on one part of the WeChat Official Account workflow and can be used
-independently or as a pipeline.
+- Convert Markdown articles with front matter into WeChat-compatible inline-style HTML.
+- Generate local browser previews and raw styled HTML fragments for publishing pipelines.
+- Prepare cover and body illustration assets through OpenRouter or Codex image generation.
+- Upload materials, replace body images, create drafts, inspect drafts, and query stats.
+- Require exact confirmations before publishing or deleting WeChat content.
+- Package the canonical skills as Codex, Claude Code, and OpenClaw plugin artifacts.
+- Generate well-known skills indexes for Hermes-compatible clients.
+
+## Repository Layout
+
+This repository treats `skills/` as the canonical Agent Skills source:
+
+| Path | Purpose |
+| --- | --- |
+| `skills/` | Source-of-truth skill folders with `SKILL.md`, scripts, references, and assets. |
+| `plugins/holo-wechat-mp/` | Shared plugin wrapper for Codex, Claude Code, and OpenClaw. |
+| `.agents/plugins/marketplace.json` | Codex local marketplace entry pointing to `./plugins/holo-wechat-mp`. |
+| `src/holo_wechat_wpskills/` | Validation, plugin sync, example generation, and release artifact build tooling. |
+| `examples/articles/` | Example article workflows for local dry-runs and documentation. |
+| `registry/` | OpenClaw and Hermes publication notes plus well-known discovery templates. |
+| `dist/` | Generated release artifacts, ignored by Git. |
+
+Generated plugin skill copies under `plugins/holo-wechat-mp/skills/` are synced
+from the canonical `skills/` directory and are not maintained by hand.
+
+## Skill Catalog
 
 | Skill | Purpose |
 | --- | --- |
 | `wechat-mp-typeset` | Convert Markdown articles into WeChat-compatible inline-style HTML and local previews. |
 | `wechat-mp-manage` | Upload materials, replace body images, create drafts, inspect drafts, and safely publish/delete with explicit confirmation. |
 | `wechat-mp-illustrate` | Generate or prepare article illustration assets. |
-| `wechat-mp-publish` | Provide publishing workflow guidance and operator-facing guardrails. |
+| `wechat-mp-publish` | Coordinate the end-to-end Markdown, illustration, draft, and publish workflow. |
 
 ## Quickstart
 
